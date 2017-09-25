@@ -1,0 +1,74 @@
+#!/bin/ksh
+#################################################################################
+#
+# File : Fixed-Access-Service-Heartbeat
+# Purpose : Log/send Heartbeat from Nagios to Netcool
+# Version : 1.2
+# Date : 25-Sep-2017
+# Authors : Ed Donath / Reinder Schuitemaker / Jeroen van Rhee
+# Department : W&O N&S PERF Voice Services / 
+#
+# ------------------------------------------------------------------------------
+# History
+# 25-Sep-2017, Jeroen van Rhee, Changed for DSL access Domain
+# 11-Mar-2009, Ed Donath, Added comments
+# 09-Mar-2009, Ed Donath, Initial version
+#
+#################################################################################
+#
+# Nagios to Netcool field mappings for Heartbeats
+#
+# Netcool field Req Nagios input
+#
+# 1. $Agent YES Nagios
+# 2. $Domain YES IMS
+# 3. $EventType YES Heartbeat
+# 4. $Severity YES 1 (Netcool GF1 default)
+# 5. $Facility n
+# 6. $SubType n
+# 7. $Processing YES N (means normal)
+# 8. $BrandType n
+# 9. $NodeName YES Nagios
+# 10. $OtherNodeName n
+# 11. $IPAdress n
+# 12. $CardName n
+# 13. $Port n
+# 14. $OtherPort n
+# 15. $LinkName n
+# 16. $Circuit n
+# 17. $ServiceID n
+# 18. $AlertKey n
+# 19. $Country n
+# 20. $Province n
+# 21. $City n
+# 22. $ZIPCode n
+# 23. $Streetname_NR n
+# 24. $SenderKey n
+# 25. $CustomerRef n
+# 26. $DateTime n
+# 27. $Interval YES 600 (seconds between HB's)
+# 28. $AlarmSummary YES Heartbeat
+# 29. $Text1 n
+# 30. $Text2 n
+# 31. $Text3 n
+#
+#################################################################################
+#
+# YOUR ENVIRONMENT:
+#
+DOMAIN="DSL" # Could be IPB, IPTV, ZIPB, IMS. DSL ....
+LOGGER="/usr/bin/logger" # Where to find the UNIX logger command
+SYSLOG_FAC="local3.info" # Which syslog facility are we using
+SYSLOG_TAG="_GF1_" # Netcool identifier for 'Generic Format 1'
+print_usage() {
+echo "
+Usage: $0 is not intended to be run manually.
+Its main purpose is to act as an Event Handler to log Nagios
+Heartbeats to syslog. These Heartbeats may be forwarded to Netcool.
+"
+}
+if [ $# -ne 1 -o "$1" != "Alive" ]; then
+print_usage
+exit 0;
+fi
+$LOGGER -p "$SYSLOG_FAC" -t "$SYSLOG_TAG " ";Nagios;$DOMAIN;Heartbeat;1;;;N;;Nagios;;;;;;;;;;;;;;;;;;600;Nagios;;;"
