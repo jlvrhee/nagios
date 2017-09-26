@@ -13,5 +13,7 @@ ADD cron/heartbeat-crontab /etc/cron.d/heartbeat-cron
  
  # Give execution rights on the cron job
 RUN chmod 0644 /etc/cron.d/heartbeat-cron
+# Start cron deamon
+RUN /usr/sbin/crond -f
 
 # RUN restart nagios ???
