@@ -6,7 +6,7 @@
 # Version : 1.2
 # Date : 25-Sep-2017
 # Authors : Ed Donath / Reinder Schuitemaker / Jeroen van Rhee
-# Department : W&O N&S PERF Voice Services / 
+# Department : W&O N&S PERF Voice Services / N&I ACN Innovation Fixed Access Dev 
 #
 # ------------------------------------------------------------------------------
 # History
@@ -68,7 +68,7 @@ Heartbeats to syslog. These Heartbeats may be forwarded to Netcool.
 "
 }
 if [ $# -ne 1 -o "$1" != "Alive" ]; then
-print_usage
-exit 0;
+   print_usage
+   exit 0;
 fi
-$LOGGER -p "$SYSLOG_FAC" -t "$SYSLOG_TAG " ";Nagios;$DOMAIN;Heartbeat;1;;;N;;Nagios;;;;;;;;;;;;;;;;;;600;Nagios;;;"
+$LOGGER -d -n dslportal.dslam.acc.oam.kpn.org -p "$SYSLOG_FAC" -t "$SYSLOG_TAG " ";Nagios;$DOMAIN;Heartbeat;1;;;N;;Nagios;;;;;;;;;;;;;;;;;;600;Nagios;;;"

@@ -1,0 +1,130 @@
+#!/bin/ksh
+#################################################################################
+#
+# File : Fixed-Access-Host-Event
+# Purpose : Log/send Host Event from Nagios to Netcool
+# Version : 1.2
+# Date : 25-Sep-2017
+# Authors : Ed Donath / Reinder Schuitemaker / Jeroen van Rhee
+# Department : W&O N&S PERF Voice Services / N&I ACN Innovation Fixed Access Dev
+#
+# ------------------------------------------------------------------------------
+# History
+# 25-Sep-2017, Jeroen van Rhee, Changed for DSL access Domain
+# 11-Mar-2009, Ed Donath, Added comments
+# 09-Mar-2009, Ed Donath, Initial version
+#
+#################################################################################
+#
+# Nagios to Netcool field mappings for Host Events
+#
+# Netcool field Req Nagios input
+#
+# 1. $Agent YES Nagios
+# 2. $Domain YES IMS
+# 3. $EventType YES Node
+# 4. $Severity YES Mapped (normally from $HOSTSTATEID) as follows:
+#
+# Nagios $HOSTSTATEID$:
+# 0: Host UP => Netcool Severity 0 (Clear)
+# 1: Host DOWN => Netcool Severity 5 (Critical)
+# 2: Host UNREACHABLE => Netcool Severity 5 (Critical)
+# We will simply use $HOSTPROBLEMID >0 => Netcool Severity 5
+#
+# 5. $Facility n
+# 6. $SubType n
+# 7. $Processing YES N (means normal)
+# 8. $BrandType n
+# 9. $NodeName YES $HOSTNAME$
+# 10. $OtherNodeName n
+# 11. $IPAdress YES $HOSTADDRESS$
+# 12. $CardName n
+# 13. $Port n
+# 14. $OtherPort n
+# 15. $LinkName n
+# 16. $Circuit n
+# 17. $ServiceID n
+# 18. $AlertKey YES $HOSTPROBLEMID$ / $LASTHOSTPROBLEMID$
+# 19. $Country n
+# 20. $Province n
+# 21. $City n
+# 22. $ZIPCode n
+# 23. $Streetname_NR n
+# 24. $SenderKey n
+# 25. $CustomerRef n
+# 26. $DateTime n
+# 27. $Interval n
+# 28. $AlarmSummary YES $HOSTOUTPUT$
+# 29. $Text1 n
+# 30. $Text2 n
+# 31. $Text3 n
+#
+# For Nagios IMS the Netcool ClassID is 9315
+#
+#################################################################################
+#
+# YOUR ENVIRONMENT:
+#
+AGENT="Nagios" # Netcool $Agent for Nagios
+DOMAIN="IMS" # Could be IPB, IPTV, ZIPB, ....
+LOGGER="/usr/bin/logger" # Where to find the UNIX logger command
+PROCESSING="N" # Netcool $Processing (N = Normal)
+SHIFT=5 # Locate the 1st parameter containing $HOSTOUTPUT
+SYSLOG_FAC="local3.info" # Which syslog facility are we using
+SYSLOG_TAG="_GF1_" # Netcool identifier for 'Generic Format 1'
+TYPE="Node" # Node, Service, Heartbeat
+#################################################################################
+
+print_usage() {
+echo "
+Usage: $0 is not intended to be run manually.
+Its main purpose is to act as an Event Handler to log Nagios
+messages to syslog. These messages may be forwarded to Netcool.
+"
+}
+if [ $# -le $SHIFT ]; then
+   print_usage
+   exit 0;
+fi
+
+# An additional check on one specific parameter
+if [ "$3" != "SOFT" -a "$3" != "HARD" ]; then
+   print_usage
+   exit 0;
+fi
+
+# Expected parsed Nagios Macro Variables
+# Note: the shift and $* gathers all remaining parameters
+HOSTNAME=$1 # Nodename involved
+HOSTADDRESS=$2 # Node IP involved
+HOSTSTATETYPE=$3 # SOFT, HARD (SOFT during check retries)
+HOSTPROBLEMID=$4 # Nagios globally unique ID, is 0 when UP
+LASTHOSTPROBLEMID=$5 # The former Nagios globally unique ID
+shift $SHIFT
+HOSTOUTPUT="$*" # Short output, 1st line of Nagios display message
+
+# Get rid of semicolons, this is the Netcool GF1 field separator!
+TEMP="`echo $HOSTOUTPUT | /bin/tr \; \:`"
+HOSTOUTPUT="$TEMP"
+
+# Don't send Nagios 'SOFT' state type messages to syslog / Netcool
+if [ "$HOSTSTATETYPE" = "SOFT" ]; then
+   exit 0;
+fi
+
+# Raise or Update an Alarm when the ProblemID is larger than zero
+# (update when state changes between Down and Unreachable)
+if [ $HOSTPROBLEMID -gt 0 ]; then
+   SEVERITY=5
+fi
+
+# Clear the alarm when the ProblemID changes back to zero
+# (Do not put this section above Raise/Update while $HOSTPROBLEMID is manipulated!
+if [ $HOSTPROBLEMID -eq 0 -a $LASTHOSTPROBLEMID -gt 0 ]; then
+   HOSTPROBLEMID=$LASTHOSTPROBLEMID
+   SEVERITY=0
+fi
+
+# Set all variables/parameters and generate the syslog message
+SYSLOG_MSG=";$AGENT;$DOMAIN;$TYPE;$SEVERITY;;;$PROCESSING;;$HOSTNAME;;$HOSTADDRESS;;;;;;;$HOSTPROBLEMID;;;;;;;;;;$HOSTOUTPUT;;;"
+$LOGGER -d -n dslportal.dslam.acc.oam.kpn.org -p "$SYSLOG_FAC" -t "$SYSLOG_TAG " "$SYSLOG_MSG"

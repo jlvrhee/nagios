@@ -1,0 +1,139 @@
+#!/bin/ksh
+#################################################################################
+#
+# File : Fixed-Access-Service-Event
+# Purpose : Log/send Service Event from Nagios to Netcool
+# Version : 1.2
+# Date : 25-Sep-2017
+# Authors : Ed Donath / Reinder Schuitemaker / Jeroen van Rhee
+# Department : W&O N&S PERF Voice Services / N&I ACN Innovation Fixed Access Dev
+#
+# ------------------------------------------------------------------------------
+# History
+# 25-Sep-2017, Jeroen van Rhee, Changed for DSL access Domain
+# 11 Mar-2009, Ed Donath, Added comments
+# 09-Mar-2009, Ed Donath, Initial version
+#
+#################################################################################
+#
+# Nagios to Netcool field mappings for Service Events
+#
+# Netcool field Req Nagios input
+#
+# 1. $Agent YES Nagios
+# 2. $Domain YES IMS
+# 3. $EventType YES Service
+# 4. $Severity YES Mapped from $SERVICESTATEID$ as follows:
+#
+# Nagios $SERVICESTATEID$:
+# 0: Service OK => Netcool Severity 0 (Clear)
+# 1: Service WARNING => Netcool Severity 3 (Minor)
+# 2: Service CRITICAL => Netcool Severity 4 (Major)
+# 3: Service UNKNOWN => Netcool Severity 1 (Indeterminate)
+#
+# 5. $Facility n
+# 6. $SubType n
+# 7. $Processing YES N (means normal)
+# 8. $BrandType n
+# 9. $NodeName YES $HOSTNAME$
+# 10. $OtherNodeName n
+# 11. $IPAdress YES $HOSTADDRESS$
+# 12. $CardName n
+# 13. $Port n
+# 14. $OtherPort n
+# 15. $LinkName n
+# 16. $Circuit n
+# 17. $ServiceID n
+# 18. $AlertKey YES $SERVICEPROBLEMID$ / $LASTSERVICEPROBLEMID$
+# 19. $Country n
+# 20. $Province n
+# 21. $City n
+# 22. $ZIPCode n
+# 23. $Streetname_NR n
+# 24. $SenderKey n
+# 25. $CustomerRef n
+# 26. $DateTime n
+# 27. $Interval n
+# 28. $AlarmSummary YES $SERVICEOUTPUT$
+# 29. $Text1 n
+# 30. $Text2 n
+# 31. $Text3 n
+#
+#################################################################################
+#
+# YOUR ENVIRONMENT:
+#
+AGENT="Nagios" # Netcool $Agent for Nagios
+DOMAIN="IMS" # Could be IPB, IPTV, ZIPB, ....
+LOGGER="/usr/bin/logger" # Where to find the UNIX logger command
+PROCESSING="N" # Netcool $Processing (N = Normal)
+SHIFT=6 # Locate the 1st parameter containing
+$SERVICEOUTPUT
+SYSLOG_FAC="local3.info" # Which syslog facility are we using
+SYSLOG_TAG="_GF1_" # Netcool identifier for 'Generic Format 1'
+TYPE="Service" # Node, Service, Heartbeat
+#################################################################################
+print_usage() {
+echo "
+Usage: $0 is not intended to be run manually.
+Its main purpose is to act as an Event Handler to log Nagios
+messages to syslog. These messages may be forwarded to Netcool.
+"
+}
+if [ $# -le $SHIFT ]; then
+   print_usage
+   exit 0;
+fi
+# An additional check on one specific parameter
+if [ "$4" != "SOFT" -a "$4" != "HARD" ]; then
+   print_usage
+   exit 0;
+fi
+
+# Expected parsed Nagios Macro Variables
+# Note: the shift and $* gathers all remaining parameters
+HOSTNAME=$1 # Nodename involved
+HOSTADDRESS=$2 # Node IP involved
+SERVICESTATEID=$3 # 0=OK, 1=WARNING, 2=CRITICAL, 3=UNKNOWN
+SERVICESTATETYPE=$4 # SOFT, HARD (SOFT during check retries)
+SERVICEPROBLEMID=$5 # Nagios globally unique ID, is 0 when OK
+LASTSERVICEPROBLEMID=$6 # The former Nagios globally unique ID
+shift $SHIFT
+SERVICEOUTPUT="$*" # Nagios $SERVICEDESC$ + $SERVICEOUTPUT$
+
+# These are the last two Macro Variables
+# in the Nagios Command Definition
+# Get rid of semicolons, this is the Netcool GF1 field separator!
+TEMP="`echo $SERVICEOUTPUT | /bin/tr \; \:`"
+SERVICEOUTPUT="$TEMP"
+
+# Don't send Nagios 'SOFT' state type messages to syslog / Netcool
+if [ "$SERVICESTATETYPE" = "SOFT" ]; then
+exit 0;
+fi
+
+# Raise or Update an Alarm when the ProblemID is larger than zero
+# (update when state changes between Warning, Critical and Unknown)
+if [ $SERVICEPROBLEMID -gt 0 ]; then
+if [ $SERVICESTATEID -eq 1 ]; then
+SEVERITY=3
+fi
+if [ $SERVICESTATEID -eq 2 ]; then
+SEVERITY=4
+fi
+if [ $SERVICESTATEID -eq 3 ]; then
+SEVERITY=1
+fi
+fi
+
+# Clear the alarm when the ProblemID changes back to zero
+# (Do not put this section above Raise/Update while $SERVICEPROBLEMID is
+manipulated!)
+if [ $SERVICEPROBLEMID -eq 0 -a $LASTSERVICEPROBLEMID -gt 0 ]; then
+SERVICEPROBLEMID=$LASTSERVICEPROBLEMID
+SEVERITY=0
+fi
+
+# Set all variables/parameters and generate the syslog message
+SYSLOG_MSG=";$AGENT;$DOMAIN;$TYPE;$SEVERITY;;;$PROCESSING;;$HOSTNAME;;$HOSTADDRESS;;;;;;;$SERVICEPROBLEMID;;;;;;;;;;$SERVICEOUTPUT;;;"
+$LOGGER -d -n dslportal.dslam.acc.oam.kpn.org -p "$SYSLOG_FAC" -t "$SYSLOG_TAG " "$SYSLOG_MSG"
