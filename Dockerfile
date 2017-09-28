@@ -201,11 +201,11 @@ RUN echo "use_timezone=${NAGIOS_TIMEZONE}" >> /opt/nagios/etc/nagios.cfg
 
 # Copy host event, service event and heartbeat scripts
 ADD bin/Fixed-Access-Host-Event /opt/nagios/bin/Fixed-Access-Host-Event
-RUN chmod 0744 /opt/nagios/bin/Fixed-Access-Host-Event
+RUN chmod +x /opt/nagios/bin/Fixed-Access-Host-Event
 ADD bin/Fixed-Access-Service-Event /opt/nagios/bin/Fixed-Access-Service-Event
-RUN chmod 0744 /opt/nagios/bin/Fixed-Access-Service-Event
+RUN chmod +x /opt/nagios/bin/Fixed-Access-Service-Event
 ADD bin/Fixed-Access-Service-Heartbeat /opt/nagios/bin/Fixed-Access-Service-Heartbeat
-RUN chmod 0744 /opt/nagios/bin/Fixed-Access-Service-Heartbeat
+RUN chmod +x /opt/nagios/bin/Fixed-Access-Service-Heartbeat
 
 ## Add crontab for heart beat messages
 # Add crontab file in the cron directory
