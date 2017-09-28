@@ -230,8 +230,9 @@ ADD apache.init /etc/sv/apache/run
 ADD postfix.init /etc/sv/postfix/run
 ADD rsyslog.init /etc/sv/rsyslog/run
 ADD crond.init /etc/sv/crond/run
+RUN chmod -R +x /etc/sv/*
 ADD start.sh /usr/local/bin/start_nagios
-RUN chmod +x /usr/local/bin/start_nagios
+RUN chmod +x /usr/local/bin/start_nagios 
 
 # enable all runit services
 RUN ln -s /etc/sv/* /etc/service
