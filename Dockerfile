@@ -205,8 +205,8 @@ RUN chmod +x /opt/nagios/bin/Fixed-Access-Service-Heartbeat /opt/nagios/bin/Fixe
 ## Add crontab for heart beat messages
 # Add crontab file in the cron directory
 ADD cron/heartbeat-crontab /etc/cron.d/heartbeat-cron
-# Give execution rights on the cron job
-RUN chmod 0755 /etc/cron.d/heartbeat-cron
+# Workaround to make sure cron doesn't complain about  NUMBER OF HARD LINKS > 1
+RUN touch /etc/crontab /etc/cron.d/*
 
 # Copy example config in-case the user has started with empty var or etc
 
