@@ -178,14 +178,11 @@ RUN mkdir -p -m 0755 /usr/share/snmp/mibs                     && \
     download-mibs && echo "mibs +ALL" > /etc/snmp/snmp.conf
 
 RUN sed -i 's,/bin/mail,/usr/bin/mail,' /opt/nagios/etc/objects/commands.cfg  && \
-    sed -i 's,/usr/usr,/usr,'           /opt/nagios/etc/objects/commands.cfg
-
-RUN cp /etc/services /var/spool/postfix/etc/  && \
-    echo "smtp_address_preference = ipv4" >> /etc/postfix/main.cf
-
-RUN rm -rf /etc/rsyslog.d /etc/rsyslog.conf
-
-RUN rm -rf /etc/sv/getty-5
+    sed -i 's,/usr/usr,/usr,'           /opt/nagios/etc/objects/commands.cfg  && \
+    cp /etc/services /var/spool/postfix/etc/                        && \
+    echo "smtp_address_preference = ipv4" >> /etc/postfix/main.cf  && \
+    rm -rf /etc/rsyslog.d /etc/rsyslog.conf  && \
+    rm -rf /etc/sv/getty-5
 
 ADD etc/nagios.cfg /opt/nagios/etc/nagios.cfg
 ADD nagios/cgi.cfg /opt/nagios/etc/cgi.cfg
@@ -201,17 +198,15 @@ RUN echo "use_timezone=${NAGIOS_TIMEZONE}" >> /opt/nagios/etc/nagios.cfg
 
 # Copy host event, service event and heartbeat scripts
 ADD bin/Fixed-Access-Host-Event /opt/nagios/bin/Fixed-Access-Host-Event
-RUN chmod +x /opt/nagios/bin/Fixed-Access-Host-Event
 ADD bin/Fixed-Access-Service-Event /opt/nagios/bin/Fixed-Access-Service-Event
-RUN chmod +x /opt/nagios/bin/Fixed-Access-Service-Event
 ADD bin/Fixed-Access-Service-Heartbeat /opt/nagios/bin/Fixed-Access-Service-Heartbeat
-RUN chmod +x /opt/nagios/bin/Fixed-Access-Service-Heartbeat
+RUN chmod +x /opt/nagios/bin/Fixed-Access-Service-Heartbeat /opt/nagios/bin/Fixed-Access-Service-Event /opt/nagios/bin/Fixed-Access-Host-Event
 
 ## Add crontab for heart beat messages
 # Add crontab file in the cron directory
 ADD cron/heartbeat-crontab /etc/cron.d/heartbeat-cron
 # Give execution rights on the cron job
-RUN chmod 0644 /etc/cron.d/heartbeat-cron
+RUN chmod 0755 /etc/cron.d/heartbeat-cron
 
 # Copy example config in-case the user has started with empty var or etc
 

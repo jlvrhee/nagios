@@ -104,34 +104,33 @@ SERVICEOUTPUT="$*" # Nagios $SERVICEDESC$ + $SERVICEOUTPUT$
 # These are the last two Macro Variables
 # in the Nagios Command Definition
 # Get rid of semicolons, this is the Netcool GF1 field separator!
-TEMP="`echo $SERVICEOUTPUT | /bin/tr \; \:`"
+TEMP="`echo $SERVICEOUTPUT | /usr/bin/tr \; \:`"
 SERVICEOUTPUT="$TEMP"
 
 # Don't send Nagios 'SOFT' state type messages to syslog / Netcool
 if [ "$SERVICESTATETYPE" = "SOFT" ]; then
-exit 0;
+   exit 0;
 fi
 
 # Raise or Update an Alarm when the ProblemID is larger than zero
 # (update when state changes between Warning, Critical and Unknown)
 if [ $SERVICEPROBLEMID -gt 0 ]; then
-if [ $SERVICESTATEID -eq 1 ]; then
-SEVERITY=3
-fi
-if [ $SERVICESTATEID -eq 2 ]; then
-SEVERITY=4
-fi
-if [ $SERVICESTATEID -eq 3 ]; then
-SEVERITY=1
-fi
+   if [ $SERVICESTATEID -eq 1 ]; then
+      SEVERITY=3
+   fi
+   if [ $SERVICESTATEID -eq 2 ]; then
+      SEVERITY=4
+   fi
+   if [ $SERVICESTATEID -eq 3 ]; then
+      SEVERITY=1
+   fi
 fi
 
 # Clear the alarm when the ProblemID changes back to zero
-# (Do not put this section above Raise/Update while $SERVICEPROBLEMID is
-manipulated!)
+# (Do not put this section above Raise/Update while $SERVICEPROBLEMID is manipulated!)
 if [ $SERVICEPROBLEMID -eq 0 -a $LASTSERVICEPROBLEMID -gt 0 ]; then
-SERVICEPROBLEMID=$LASTSERVICEPROBLEMID
-SEVERITY=0
+   SERVICEPROBLEMID=$LASTSERVICEPROBLEMID
+   SEVERITY=0
 fi
 
 # Set all variables/parameters and generate the syslog message
