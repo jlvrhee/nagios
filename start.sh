@@ -4,6 +4,13 @@
 # this script becomes PID 1 inside the container, catches termination signals, and stops
 # processes managed by runit
 
+# Workaround to make sure cron doesn't complain about  NUMBER OF HARD LINKS > 1
+touch /etc/crontab 
+touch /etc/cron.d/*
+
+#Configure correct syslog server
+sed -i 's/SYSLOG_SERVER/'"$SYSLOG_SERVER"'/' /opt/nagios/bin/Fixed-Access*
+
 if [ -z "$(ls -A /opt/nagios/etc)" ]; then
     echo "Started with empty ETC, copying example data in-place"
     cp -Rp /orig/etc/* /opt/nagios/etc/

@@ -71,4 +71,4 @@ if [ $# -ne 1 -o "$1" != "Alive" ]; then
    print_usage
    exit 0;
 fi
-$LOGGER -d -n dslportal.dslam.acc.oam.kpn.org -p "$SYSLOG_FAC" -t "$SYSLOG_TAG " ";Nagios;$DOMAIN;Heartbeat;1;;;N;;Nagios;;;;;;;;;;;;;;;;;;600;Nagios;;;"
+$LOGGER -d -n SYSLOG_SERVER -p "$SYSLOG_FAC" -t "$SYSLOG_TAG " ";Nagios;$DOMAIN;Heartbeat;1;;;N;;Nagios;;;;;;;;;;;;;;;;;;600;Nagios;;;"

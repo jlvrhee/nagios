@@ -135,4 +135,4 @@ fi
 
 # Set all variables/parameters and generate the syslog message
 SYSLOG_MSG=";$AGENT;$DOMAIN;$TYPE;$SEVERITY;;;$PROCESSING;;$HOSTNAME;;$HOSTADDRESS;;;;;;;$SERVICEPROBLEMID;;;;;;;;;;$SERVICEOUTPUT;;;"
-$LOGGER -d -n dslportal.dslam.acc.oam.kpn.org -p "$SYSLOG_FAC" -t "$SYSLOG_TAG " "$SYSLOG_MSG"
+$LOGGER -d -n SYSLOG_SERVER -p "$SYSLOG_FAC" -t "$SYSLOG_TAG " "$SYSLOG_MSG"

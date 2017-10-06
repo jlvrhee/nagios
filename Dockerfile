@@ -20,6 +20,7 @@ ENV NG_CGI_URL             /cgi-bin
 ENV NAGIOS_BRANCH          nagios-4.3.4
 ENV NAGIOS_PLUGINS_BRANCH  release-2.2.1
 ENV NRPE_BRANCH            nrpe-3.2.1
+ENV SYSLOG_SERVER          localhost
 
 
 RUN echo postfix postfix/main_mailer_type string "'Internet Site'" | debconf-set-selections  && \
@@ -205,8 +206,6 @@ RUN chmod +x /opt/nagios/bin/Fixed-Access-Service-Heartbeat /opt/nagios/bin/Fixe
 ## Add crontab for heart beat messages
 # Add crontab file in the cron directory
 ADD cron/heartbeat-crontab /etc/cron.d/heartbeat-cron
-# Workaround to make sure cron doesn't complain about  NUMBER OF HARD LINKS > 1
-RUN touch /etc/crontab /etc/cron.d/*
 
 # Copy example config in-case the user has started with empty var or etc
 
