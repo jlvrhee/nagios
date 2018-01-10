@@ -140,6 +140,10 @@ RUN cd /tmp                                                                  && 
     cp src/check_nrpe ${NAGIOS_HOME}/libexec/                                && \
     make clean
 
+#Change nagios theme to arana style
+RUN rm -rf  ${NAGIOS_HOME}/share/*
+ADD arana_style ${NAGIOS_HOME}/share/
+
 RUN cd /tmp                                                          && \
     git clone https://git.code.sf.net/p/nagiosgraph/git nagiosgraph  && \
     cd nagiosgraph                                                   && \
