@@ -21,7 +21,7 @@
 # Netcool field Req Nagios input
 #
 # 1. $Agent YES Nagios
-# 2. $Domain YES IMS
+# 2. $Domain YES DSL
 # 3. $EventType YES Node
 # 4. $Severity YES Mapped (normally from $HOSTSTATEID) as follows:
 #
@@ -59,14 +59,14 @@
 # 30. $Text2 n
 # 31. $Text3 n
 #
-# For Nagios IMS the Netcool ClassID is 9315
+# For Nagios DSL the Netcool ClassID is 9315
 #
 #################################################################################
 #
 # YOUR ENVIRONMENT:
 #
 AGENT="Nagios" # Netcool $Agent for Nagios
-DOMAIN="IMS" # Could be IPB, IPTV, ZIPB, ....
+DOMAIN="DSL" # Could be IPB, IPTV, ZIPB, DSL, ....
 LOGGER="/usr/bin/logger" # Where to find the UNIX logger command
 PROCESSING="N" # Netcool $Processing (N = Normal)
 SHIFT=5 # Locate the 1st parameter containing $HOSTOUTPUT

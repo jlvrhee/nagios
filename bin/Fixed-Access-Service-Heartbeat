@@ -21,7 +21,7 @@
 # Netcool field Req Nagios input
 #
 # 1. $Agent YES Nagios
-# 2. $Domain YES IMS
+# 2. $Domain YES DSL
 # 3. $EventType YES Heartbeat
 # 4. $Severity YES 1 (Netcool GF1 default)
 # 5. $Facility n
@@ -56,7 +56,7 @@
 #
 # YOUR ENVIRONMENT:
 #
-DOMAIN="DSL" # Could be IPB, IPTV, ZIPB, IMS. DSL ....
+DOMAIN="DSL" # Could be IPB, IPTV, ZIPB, DSL, ....
 LOGGER="/usr/bin/logger" # Where to find the UNIX logger command
 SYSLOG_FAC="local3.info" # Which syslog facility are we using
 SYSLOG_TAG="_GF1_" # Netcool identifier for 'Generic Format 1'
