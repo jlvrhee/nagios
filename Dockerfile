@@ -154,6 +154,7 @@ RUN cd /tmp                                                          && \
         --nagios-perfdata-file ${NAGIOS_HOME}/var/perfdata.log  \
         --nagios-cgi-url /cgi-bin                               \
                                                                      && \
+    mkdir ${NAGIOS_HOME}/share/ssi && \
     cp share/nagiosgraph.ssi ${NAGIOS_HOME}/share/ssi/common-header.ssi
 
 RUN cd /opt                                                                         && \
